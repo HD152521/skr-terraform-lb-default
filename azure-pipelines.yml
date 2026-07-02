@@ -20,7 +20,7 @@ variables:
   - name: WORK_DIR
     value: '$(BASE_DIR)/runs/${{ parameters.REQUEST_ID }}'
   - name: STATE_DIR
-    value: '$(BASE_DIR)/state/${{ parameters.ENV }}/${{ parameters.PROJECT }}/$(STACK-GW)'
+    value: '$(BASE_DIR)/state/${{ parameters.ENV }}/${{ parameters.PROJECT }}/$(STACK-LB)'
   - name: VAR_FILE
     value: 'lb.auto.tfvars.json'
 
