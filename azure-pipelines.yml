@@ -50,7 +50,8 @@ stages:
                 echo '{"load_balancers":{}}' > $(WORK_DIR)/merged.json
               fi
               
-              jq -r '.load_balancers | keys[]' terraform.tfvars.json > lb-keys.txt
+              jq -r '.load_balancers[] | "\(.resource_group_name)__\(.lb_settings.name)__\(.lb_settings.backend_pool_name)"' terraform.tfvars.json > lb-keys.txt
+
 
               # while read -r target_key; do
               #     target_key=$(echo "$target_key" | jq -r .)
@@ -63,12 +64,26 @@ stages:
               # done < lb-keys.txt
 
               while read -r target_key; do
-                spec=$(jq -c --arg k "$target_key" \
-                    '.load_balancers[$k]' \
-                    terraform.tfvars.json)
-                jq --arg k "$target_key" --argjson spec "$spec" \
-                    '.load_balancers |= (with_entries(select(.key != $k)) + {($k): $spec})' \
-                    merged.json > tmp.json && mv tmp.json merged.json
+                  if [ "${{ parameters.ACTION }}" = "delete" ]; then
+                      jq --arg k "$target_key" \
+                          '.load_balancers |= with_entries(
+                              select((.value.resource_group_name + "__" + .value.lb_settings.name + "__" + .value.lb_settings.backend_pool_name) != $k)
+                          )' \
+                          merged.json > tmp.json && mv tmp.json merged.json
+                  else
+                      spec=$(jq -c --arg k "$target_key" \
+                          '.load_balancers[] | select(
+                              (.resource_group_name + "__" + .lb_settings.name + "__" + .lb_settings.backend_pool_name) == $k
+                          )' \
+                          terraform.tfvars.json)
+                      jq --arg k "$target_key" --argjson spec "$spec" \
+                          '.load_balancers |= (
+                              with_entries(select(
+                                  (.value.resource_group_name + "__" + .value.lb_settings.name + "__" + .value.lb_settings.backend_pool_name) != $k
+                              )) + {($k): $spec}
+                          )' \
+                          merged.json > tmp.json && mv tmp.json merged.json
+                  fi
               done < lb-keys.txt
 
 
