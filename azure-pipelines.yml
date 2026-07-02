@@ -32,12 +32,10 @@ stages:
           - checkout: self
 
           - script: |
-              # 파일 경로 설정
-              sudo su
-              mkdir -p $(WORK_DIR) $(STATE_DIR)
+              sudo mkdir -p $(WORK_DIR) $(STATE_DIR)
+              sudo chown -R ubuntu:ubuntu $(BASE_DIR)
               cd $(WORK_DIR)
               
-              # 💡 실패하면 자동으로 멈추되, 에러 내용만 error.log에 덮어씁니다.
               {
               cat << 'EOF' > terraform.tfvars.json
               ${{ parameters.VARIABLE }}
@@ -45,7 +43,6 @@ stages:
               
               mv $(Build.SourcesDirectory)/* $(WORK_DIR)
               
-              # 기존 State 파일 확인
               STATE_FILE="$(STATE_DIR)/$(VAR_FILE)"
               if [ -f "$STATE_FILE" ]; then
                 cp "$STATE_FILE" $(WORK_DIR)/merged.json
@@ -53,26 +50,16 @@ stages:
                 echo '{"load_balancers":{}}' > $(WORK_DIR)/merged.json
               fi
               
-              # Variable 병합을 위한 키 추출
-               jq -r '.load_balancers[] | "\(.resource_group_name)__\(.lb_settings.name)__\(.lb_settings.backend_pool_name)"'  terraform.tfvars.json > lb-keys.txt
+              jq -r '.load_balancers[] | "\(.resource_group_name)__\(.lb_settings.name)__\(.lb_settings.backend_pool_name)"' terraform.tfvars.json > lb-keys.txt
 
-               //note 여기까지함.
-              
-              # Variable 병합
               while read -r target_key; do
                   target_key=$(echo "$target_key" | jq -r .)
-                  # if [ "${{ parameters.ACTION }}" = "delete" ]; then
-                  #     jq --arg k "$target_key" \
-                  #         '.load_balancers |= with_entries(select(("\(.value.resource_group_name)__\(.value.lb_settings.name)__\(.value.lb_settings.backend_pool_name)") != $k))' \
-                  #         merged.json > tmp.json && mv tmp.json merged.json
-                  # else
                       spec=$(jq -c --arg k "$target_key" \
-                        '.load_balancers[] | select("\(.resource_group_name)__\(.lb_settings.name)__\(.lb_settings.backend_pool_name)" == $k)' \
+                        '.load_balancers[] | select((.resource_group_name + "__" + .lb_settings.name + "__" + .lb_settings.backend_pool_name) == $k)' \
                           terraform.tfvars.json)
                       jq --arg k "$target_key" --argjson spec "$spec" \
-                          '.load_balancers |= (with_entries(select(("\(.value.resource_group_name)__\(.value.lb_settings.name)__\(.value.lb_settings.backend_pool_name)") != $k)) + {($k): $spec})' \
+                          '.load_balancers |= (with_entries(select((.value.resource_group_name + "__" + .value.lb_settings.name + "__" + .value.lb_settings.backend_pool_name) != $k)) + {($k): $spec})' \
                           merged.json > tmp.json && mv tmp.json merged.json
-                  # fi
               done < lb-keys.txt
 
               mv merged.json $(VAR_FILE)
@@ -95,7 +82,6 @@ stages:
               scriptLocation: 'inlineScript'
               inlineScript: |
                 cd $(WORK_DIR)
-                # 💡 에러가 나면 자동으로 여기서 파이프라인이 멈추고 error.log가 보존됩니다.
                 terraform init -backend-config="backend.hcl" 2>error.log
             displayName: 'Terraform Init'
 
@@ -178,7 +164,6 @@ stages:
                   -H "Content-Type: application/json" \
                   -d "{\"requestId\": \"${{ parameters.REQUEST_ID }}\"}"
 
-  # global error handler
   - stage: HandleFailure
     displayName: 'Global Error Handler'
     dependsOn:
