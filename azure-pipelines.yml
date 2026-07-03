@@ -32,6 +32,7 @@ stages:
           - checkout: self
 
           - script: |
+              set -e
               sudo mkdir -p $(WORK_DIR) $(STATE_DIR)
               sudo chown -R ubuntu:ubuntu $(BASE_DIR)
               cd $(WORK_DIR)
@@ -106,6 +107,7 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
+                set -e
                 cd $(WORK_DIR)
                 terraform init -backend-config="backend.hcl" 2>error.log
             displayName: 'Terraform Init'
@@ -121,6 +123,7 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
+                set -e
                 cd $(WORK_DIR)
                 terraform plan -var-file=$(VAR_FILE) -out=tfplan 2>error.log
                 terraform show -json tfplan > tfplan.json
@@ -138,6 +141,7 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
+                set -e
                 {
                 PLAN_JSON=$(cat $(WORK_DIR)/tfplan.json | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | tr '\n' ' ' | tr '\t' ' ')
 
@@ -168,6 +172,7 @@ stages:
                     scriptType: 'bash'
                     scriptLocation: 'inlineScript'
                     inlineScript: |
+                      set -e
                       cd $(WORK_DIR)
                       terraform apply -auto-approve tfplan 2>error.log
                       cp $(VAR_FILE) $(STATE_DIR)/$(VAR_FILE)
@@ -185,6 +190,7 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
+                set -e
                 curl -X POST "http://13.124.121.66:8000/api/pipeline/success" \
                   -H "Content-Type: application/json" \
                   -d "{\"requestId\": \"${{ parameters.REQUEST_ID }}\"}"
@@ -206,6 +212,7 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
+                set -e
                 LOG_FILE="$(WORK_DIR)/error.log"
                 ERROR_MSG="상세 에러 로그 파일이 없습니다. Azure DevOps 콘솔을 확인하세요."
                 
