@@ -19,7 +19,7 @@ locals {
 
   flattened_probes = merge([
     for lb_key, lb in var.load_balancers : {
-      for probe_key, probe in lb.lb_settings.probes :
+      for probe_key, probe in coalesce(lb.lb_settings.probe, {}) :
       "${lb_key}.${probe_key}" => merge(probe, {
         lb_key = lb_key
       })
