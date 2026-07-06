@@ -39,6 +39,10 @@ resource "azurerm_public_ip" "pips" {
   resource_group_name = data.azurerm_resource_group.rg[var.load_balancers[each.value.lb_key].resource_group_name].name
   allocation_method   = "Static"
   sku                 = "Standard"
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # 2. 로드밸런서 본체 (LB마다 1개씩)
