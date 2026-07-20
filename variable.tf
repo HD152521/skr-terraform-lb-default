@@ -1,7 +1,7 @@
 # provider 구독 설정을 위한 variable 선언
 variable "subscription_id" {
   type        = string
-  description = 67a2c6c6-3b62-482c-831d-deb0f5106cf1
+  description = "배포 대상 구독 ID"
 }
 
 variable "load_balancers" {
