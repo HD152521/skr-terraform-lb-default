@@ -93,7 +93,7 @@ stages:
           
           - task: AzureCLI@2
             inputs:
-              azureSubscription: 'YS-Serivce-Connection-Test'
+              azureSubscription: 'ys_manage_group'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
@@ -111,7 +111,7 @@ stages:
           
           - task: AzureCLI@2
             inputs:
-              azureSubscription: 'YS-Serivce-Connection-Test'
+              azureSubscription: 'ys_manage_group'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
@@ -164,7 +164,7 @@ stages:
                 
                 - task: AzureCLI@2
                   inputs:
-                    azureSubscription: 'YS-Serivce-Connection-Test'
+                    azureSubscription: 'ys_manage_group'
                     scriptType: 'bash'
                     scriptLocation: 'inlineScript'
                     inlineScript: |
