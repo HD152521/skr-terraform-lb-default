@@ -83,7 +83,7 @@ stages:
               storage_account_name = "skrblobstorageaccount"
               container_name       = "sub-test-container"
               key                  = "${{ parameters.ENV }}/${{ parameters.PROJECT }}/$(STACK-LB)/terraform.tfstate"
-              use_azuread_auth     = true
+              #use_azuread_auth     = true
               EOF
               } 2>error.log
             displayName: 'Prepare TFVars'
