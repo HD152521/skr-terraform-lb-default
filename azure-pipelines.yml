@@ -11,6 +11,8 @@ parameters:
     type: string
   - name: VARIABLE
     type: string
+  - name: SUBSCRIPTION_ID
+    type: string
 
 pool:
   name: 'ys-skr-test'
@@ -79,7 +81,11 @@ stages:
               mv merged.json $(VAR_FILE)
               
               cat > backend.hcl <<EOF
-              path = "$(STATE_DIR)/terraform.tfstate"
+              resource_group_name  = "TEST-AKS-RG"
+              storage_account_name = "skrblobstorageaccount"
+              container_name       = "sub-test-container"
+              key                  = "${{ parameters.ENV }}/${{ parameters.PROJECT }}/$(STACK-LB)/terraform.tfstate"
+              use_azuread_auth     = true
               EOF
               } 2>error.log
             displayName: 'Prepare TFVars'
