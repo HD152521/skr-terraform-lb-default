@@ -103,11 +103,6 @@ stages:
                 set -e
                 cd $(WORK_DIR)
                 terraform init -backend-config="backend.hcl" 2>error.log
-
-                az account list --query "[].{name:name, id:id, isDefault:isDefault}" -o table
-                echo "ARM_SUBSCRIPTION_ID=$ARM_SUBSCRIPTION_ID"
-                az role assignment list --assignee $ARM_CLIENT_ID --all \
-                --query "[].{role:roleDefinitionName, scope:scope}" -o table
             displayName: 'Terraform Init'
 
   - stage: Plan
