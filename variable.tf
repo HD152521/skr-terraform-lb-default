@@ -1,8 +1,8 @@
 # provider 구독 설정을 위한 variable 선언
-#variable "subscription_id" {
-#  type        = string
-#  description = "배포 대상 구독 ID"
-#}
+variable "subscription_id" {
+  type        = string
+  description = "배포 대상 구독 ID"
+}
 
 variable "load_balancers" {
   type = map(object({
