@@ -5,10 +5,10 @@ terraform {
       version = "4.74.0"
     }
   }
-  backend "local" {}
+  backend "azurerm" {}
 }
 
 provider "azurerm" {
   features {}
-  #subscription_id = var.subscription_id
+  subscription_id = var.subscription_id
 }
