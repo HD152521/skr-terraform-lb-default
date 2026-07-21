@@ -11,8 +11,6 @@ parameters:
     type: string
   - name: VARIABLE
     type: string
-  - name: SUBSCRIPTION_ID
-    type: string
 
 pool:
   name: 'ys-skr-test'
